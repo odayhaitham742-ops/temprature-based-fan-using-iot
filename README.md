@@ -63,13 +63,16 @@ The firmware uses these Arduino libraries:
 
 Install the ESP32 board package and required libraries through Arduino IDE's Boards Manager and Library Manager.
 
+
 ## Repository Contents
 
-- [Project report](./Applied%20Project%20Report%20final..docx)
-- [Final project presentation](./Applied%20project%20final%20presentation.pdf)
-- [Project firmware archive](./project_done_with_web.zip)
+- **ESP32 Firmware:** [`src/cooling_controller.ino`](src/cooling_controller.ino)
+- **Project Report:** [`Applied Project Report`](./Applied%20Project%20Report%20final..docx)
+- **Project Presentation:** [`Final Presentation`](./Applied%20project%20final%20presentation.pdf)
+- **Hardware Documentation:** To be added after verifying the final circuit schematic.
 
-The firmware is currently provided in the ZIP archive. A cleaned, credential-free source file and a verified circuit schematic should be added as separate files to make the project easier to review and reproduce.
+The firmware source is provided separately for easier review. Wi-Fi credentials and Blynk authentication tokens must be configured locally and must never be committed to the public repository.
+
 
 ## Testing and Validation
 
