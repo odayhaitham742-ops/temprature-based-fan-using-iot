@@ -1,141 +1,97 @@
 # IoT Temperature-Based Cooling Controller
 
-An ESP32-based cooling controller that monitors temperature with a DS18B20 digital sensor and controls two 12 V DC fans using configurable temperature thresholds. The project also integrates Wi-Fi, Blynk monitoring, and email notifications for remote awareness of high-temperature conditions.
+An ESP32-based IoT prototype that monitors temperature with a DS18B20 digital sensor and controls two 12 V DC cooling fans using temperature thresholds. The project combines embedded control with Wi-Fi connectivity and Blynk-based remote monitoring and alerts.
 
-## Project Overview
+## Project at a Glance
 
-The controller reads temperature from the DS18B20 sensor and evaluates it against three thresholds: **30°C, 40°C, and 55°C**. The ESP32 controls the fan outputs and reports temperature data to Blynk. At the critical threshold, the firmware is intended to raise an alert through Blynk and email.
+- **Controller:** ESP32
+- **Temperature sensor:** DS18B20
+- **Cooling outputs:** Two 12 V DC fans controlled through relay outputs
+- **Thresholds:** 30°C, 40°C, and 55°C
+- **IoT platform:** Blynk
+- **Development environment:** Arduino framework / Arduino IDE
 
-This repository currently includes the project report, presentation, and this README. Add the final source code, verified schematic, and real prototype photos as separate files to make the project easier to reproduce and review.
+## How It Works
 
-## Features
+1. The DS18B20 measures the surrounding temperature and sends readings to the ESP32 over the OneWire bus.
+2. The ESP32 compares each reading against the configured thresholds.
+3. At 30°C, the firmware requests Fan 1 to turn on.
+4. At 40°C, the firmware requests Fan 2 to turn on as well.
+5. At 55°C, the current code sends a Blynk event named `fire_alert`. **The current code also sets both relay outputs LOW at this threshold**, which may turn the fans off depending on the relay module. Review this behavior before using the controller in a real heat-critical environment.
 
-- Digital temperature sensing with DS18B20
-- Threshold-based control for two 12 V DC fans
-- ESP32 Wi-Fi connectivity
-- Blynk temperature monitoring and event notifications
-- Email notifications, as described in the project report
-- Power conversion and interface circuitry for the hardware prototype
+The firmware uses GPIO 4 for the DS18B20 data line and GPIO 18 and GPIO 19 for the two relay outputs. Confirm these pins against the actual assembled circuit before wiring or reproducing the project.
 
 ## System Architecture
 
 ```text
-DS18B20 Temperature Sensor
-            |
-            v
-           ESP32
-        /    |     \
-       v     v      v
- Fan outputs Wi-Fi  Critical alert
-       |      |       /      \
-       v      v      v        v
-  12 V Fans  Blynk  Blynk app  Email
+DS18B20 Sensor
+      |
+      | OneWire
+      v
+    ESP32 ---------------- Wi-Fi ---------------- Blynk
+      |
+      +---- GPIO 18 ---- Relay 1 ---- Fan 1 (12 V)
+      |
+      +---- GPIO 19 ---- Relay 2 ---- Fan 2 (12 V)
+      |
+      +---- Critical-temperature event ---- Blynk notification
 ```
 
-Update this diagram if it differs from the final implemented wiring or notification flow.
+## Hardware
 
-## Hardware Components
+The project documentation describes the following components:
 
 | Component | Purpose |
 |---|---|
-| ESP32 development board | Main controller and Wi-Fi connectivity |
-| DS18B20 digital temperature sensor | Temperature measurement |
-| Two 12 V DC fans | Cooling |
-| 12 V-to-5 V regulator | Power conversion for compatible components |
-| Fan switching/driver circuit | Interface between ESP32 control outputs and fan loads |
-| Supporting components | Pull-up resistor, wiring, and other circuit components used in the prototype |
+| ESP32 development board | Reads the sensor, controls outputs, and provides Wi-Fi connectivity |
+| DS18B20 digital sensor | Temperature measurement |
+| Two 12 V DC fans | Cooling airflow |
+| Relay module / fan switching circuit | Switches the fan loads from ESP32 control signals |
+| 12 V-to-5 V regulator | Supplies compatible low-voltage components, according to the final circuit |
+| Pull-up resistor and wiring | Supports the DS18B20 bus and hardware connections |
 
-Refer to the final schematic and bill of materials for the exact part numbers and connections.
+**Hardware note:** Check the final schematic and component ratings before powering the circuit. Do not drive 12 V fans directly from ESP32 GPIO pins.
 
-## Temperature Thresholds
+## Software and Libraries
 
-The project uses three thresholds: **30°C, 40°C, and 55°C**.
+The firmware uses these Arduino libraries:
 
-| Temperature | Intended behavior described in the project |
-|---|---|
-| Below 30°C | Normal monitoring; fans remain off |
-| 30°C to below 40°C | Activate Fan 1 |
-| 40°C to below 55°C | Activate both fans |
-| 55°C and above | Trigger the critical-temperature alert |
+- `Blynk` for IoT connectivity and event notifications
+- `OneWire` for communication with the DS18B20
+- `DallasTemperature` for temperature readings
+- ESP32 Wi-Fi support provided by the ESP32 Arduino core
 
-**Firmware note:** The sample code previously included in this README sets both relay outputs LOW when the temperature reaches 55°C. Confirm that this is the intended safety behavior for your actual relay module and cooling application before relying on the system. For many cooling applications, maintaining cooling during a high-temperature alert may be preferable, but the correct response depends on the system's safety requirements.
+Install the ESP32 board package and required libraries through Arduino IDE's Boards Manager and Library Manager.
 
-## Software
-
-The project description references:
-
-- Arduino IDE and ESP32 board support
-- OneWire and DallasTemperature libraries for the DS18B20
-- Blynk library for monitoring and events
-- ESP32 Wi-Fi support
-- An SMTP/email integration for email notifications
-
-Confirm the exact libraries and versions against the final firmware before publishing them as tested requirements.
-
-## Getting Started
-
-1. Install the Arduino IDE and the ESP32 board support package.
-2. Install the libraries used by the final firmware.
-3. Assemble the hardware using the verified schematic.
-4. Configure Wi-Fi, Blynk, and email settings locally.
-5. Select the correct ESP32 board and serial port.
-6. Upload the firmware and open the Serial Monitor.
-7. Test sensor readings, fan switching at each threshold, Blynk updates, and email alerts.
-
-Never commit real Wi-Fi passwords, Blynk tokens, email passwords, or other credentials. Keep private configuration outside version control and use placeholder values in any example configuration.
-
-## Repository Files
+## Repository Contents
 
 - [Project report](./Applied%20Project%20Report%20final..docx)
-- [Project presentation](./Applied%20project%20final%20presentation.pdf)
+- [Final project presentation](./Applied%20project%20final%20presentation.pdf)
+- [Project firmware archive](./project_done_with_web.zip)
 
-The repository also contains `project_done_with_web.zip`. Add a short description of its contents or replace it with a clearly named folder/file if it is relevant to the project.
+The firmware is currently provided in the ZIP archive. A cleaned, credential-free source file and a verified circuit schematic should be added as separate files to make the project easier to review and reproduce.
 
 ## Testing and Validation
 
-Record results from the actual prototype and keep claims reproducible. A useful test record includes the measured temperature, expected fan state, actual fan state, and whether notifications were received.
+The project report describes hardware prototyping and simulation. For a stronger technical portfolio, add evidence from your own tests, such as prototype photos, a wiring diagram, Blynk dashboard screenshots, and measured temperature / fan-state results.
 
-| Test | What to record |
-|---|---|
-| Sensor reading | Reading compared with a reference thermometer, if available |
-| 30°C threshold | Fan 1 switching behavior |
-| 40°C threshold | Fan 2 switching behavior |
-| 55°C threshold | Alert and fan behavior |
-| Blynk integration | Whether dashboard updates and events arrive |
-| Email integration | Whether the notification is received |
-| Power circuit | Measured regulator output and fan supply current |
+Do not report numerical accuracy, current consumption, or test counts unless you have measurements or test records to support them.
 
-Only publish accuracy, current-consumption, and repeated-test figures when you have measurements or test records to support them.
+## Security
 
-## Recommended Repository Structure
+Do not commit real Wi-Fi passwords, Blynk authentication tokens, or email credentials. Keep secrets outside the public source code and rotate any real credentials that were previously published in a public repository.
 
-As you improve the repository, consider organizing it like this:
+## Future Improvements
 
-```text
-.
-├── README.md
-├── src/          # Final ESP32 firmware
-├── hardware/     # Verified schematic and pinout
-├── docs/         # Project report and presentation
-└── media/        # Prototype photos and demo video
-```
-
-Move the existing report and presentation into `docs/` only when you're ready to update their links and preserve the files.
-
-## Possible Future Improvements
-
-- Temperature history and data logging
-- Configurable thresholds through the dashboard
-- Sensor-disconnection detection and fail-safe behavior
-- Over-the-air firmware updates
-- Fan speed control, if supported by the selected driver and fan hardware
+- Keep cooling outputs in a clearly defined safe state during critical temperatures
+- Add sensor-disconnection detection and fail-safe behavior
+- Log temperature readings and fan states over time
+- Add a verified schematic and real prototype photos
+- Move configuration values into a local, untracked configuration file
+- Document repeatable test cases and actual results
 
 ## Author
 
 **Oday Haitham Metwalli**  
 Electronics Engineering Student  
 Interests: IoT, Embedded Systems, Networking, and Cloud Computing
-
-## License
-
-Add a license if you want to specify how others may use, modify, and redistribute this project.
